@@ -13,6 +13,8 @@ st.set_page_config(
     page_icon="🚑",
     layout="wide"
 )
+if "uploader_key" not in st.session_state:
+    st.session_state.uploader_key = 0
 
 # =====================================================
 # FUNCION ANALIZAR DESCRIPCION
@@ -100,7 +102,8 @@ st.caption(
 archivos = st.file_uploader(
     "Seleccione uno o varios CSV",
     type=["csv"],
-    accept_multiple_files=True
+    accept_multiple_files=True,
+    key=f"uploader_{st.session_state.uploader_key}"
 )
 
 if archivos:
@@ -113,7 +116,18 @@ if archivos:
 # PROCESAR
 # =====================================================
 
-if st.button("🚀 Procesar Reparto"):
+c1, c2 = st.columns(2)
+
+with c1:
+    procesar = st.button("🚀 Procesar Reparto")
+
+with c2:
+    if st.button("🗑️ Borrar carga y resultados"):
+
+        st.session_state.uploader_key += 1
+
+        st.rerun()
+if procesar:
 
     if not archivos:
 
@@ -255,10 +269,12 @@ if st.button("🚀 Procesar Reparto"):
                     ]
                 )
             # =====================================
-            # LEER HISTORICO
+            # HISTORICO
             # =====================================
 
-            conn_hist = sqlite3.connect("historico.db")
+            conn_hist = sqlite3.connect(
+                "historico.db"
+            )
 
             historico = pd.read_sql_query(
                 "SELECT nro_caso FROM historico_casos",
@@ -270,17 +286,38 @@ if st.button("🚀 Procesar Reparto"):
             casos_historicos = set(
                 historico["nro_caso"].astype(str)
             )
-            # =====================================
-            # REPARTO
-            # =====================================
 
+            df["NRO_CASO_TMP"] = (
+                df[caso_col].astype(str)
+            )
+
+            df_enviados_previamente = df[
+                df["NRO_CASO_TMP"].isin(
+                    casos_historicos
+                )
+            ].copy()
+
+            df_para_repartir = df[
+                ~df["NRO_CASO_TMP"].isin(
+                    casos_historicos
+                )
+            ].copy()
+
+            enviados_previamente = len(
+                df_enviados_previamente
+            )
+            # =====================================
+            # REPARTO ORIGINAL COLAB
+            # =====================================
+            st.write(
+             df["ALERTA"].value_counts()
+             )
             df_validos = df_para_repartir.copy()
-
+            
             df_validos = df_validos.drop_duplicates(
                 subset=[caso_col],
                 keep="first"
             )
-
             df_validos["HORA"] = (
                 df_validos["HORA"]
                 .fillna("00:00")
@@ -336,9 +373,17 @@ if st.button("🚀 Procesar Reparto"):
 
                     contador_global += 1
 
-            df1 = pd.DataFrame(operador1)
-            df2 = pd.DataFrame(operador2)
-            df3 = pd.DataFrame(operador3)
+            df1 = pd.DataFrame(
+                operador1
+            )
+
+            df2 = pd.DataFrame(
+                operador2
+            )
+
+            df3 = pd.DataFrame(
+                operador3
+            )
 
             cant_micaela = len(df1)
             cant_salome = len(df2)
@@ -347,6 +392,17 @@ if st.button("🚀 Procesar Reparto"):
             df_reparto = pd.concat(
                 [df1, df2, df3],
                 ignore_index=True
+            )
+            csv_reparto = df_reparto.to_csv(
+                index=False,
+                sep=";"
+            ).encode("utf-8")
+
+            st.download_button(
+                label="📥 Descargar Reparto CSV",
+                data=csv_reparto,
+                file_name=f"reparto_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv"
             )  
             # =====================================
             # GUARDAR HISTORICO
@@ -384,31 +440,32 @@ if st.button("🚀 Procesar Reparto"):
             conn.commit()
             conn.close()
 
-
+           
             # =====================================
             # RESULTADO
             # =====================================
 
-            st.subheader("✅ Resultado del procesamiento")
-
-            c1, c2, c3, c4, c5 = st.columns(5)
+            c1, c2, c3 = st.columns(3)
 
             with c1:
-                st.metric("Registros", total_registros)
+                    st.metric(
+                        "Casos Cargados",
+                        total_registros
+                    )
 
             with c2:
-                st.metric("Casos válidos", casos_validos)
+                    st.metric(
+                        "Casos Repartidos",
+                        len(df_reparto)
+                    )
 
             with c3:
-                st.metric("Sin fecha", sin_fecha)
+                    st.metric(
+                        "Enviados Previamente",
+                        enviados_previamente
+                    )
 
-            with c4:
-                st.metric("Múltiples fechas", multiples_fechas)
-
-            with c5:
-                st.metric("Duplicados", duplicados)
-
-            st.subheader("🎯 Reparto")
+            st.subheader("👩‍💼 Distribución de Casos")
 
             r1, r2, r3 = st.columns(3)
 
@@ -421,7 +478,15 @@ if st.button("🚀 Procesar Reparto"):
             with r3:
                 st.metric("Paloma", cant_paloma)
 
-            st.success("Reparto generado correctamente.")
+            st.success(
+                f"Se repartieron {len(df_reparto)} casos nuevos y se excluyeron {enviados_previamente} ya enviados previamente."
+            )
+            with st.expander(
+                f"Ver {enviados_previamente} casos enviados previamente"
+            ):
+                st.dataframe(
+                    df_enviados_previamente
+                )
 
         except Exception as e:
             st.error(f"Error: {e}")

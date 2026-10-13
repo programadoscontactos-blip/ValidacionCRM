@@ -391,6 +391,43 @@ if procesar:
                 [df1, df2, df3],
                 ignore_index=True
             )
+            conn = sqlite3.connect(
+                "historico.db"
+            )
+
+            fecha_reparto = datetime.now().strftime(
+                "%d/%m/%Y"
+            )
+
+            for _, fila in df_reparto.iterrows():
+
+                try:
+
+                    conn.execute(
+                        """
+                        INSERT INTO historico_casos
+                        (
+                            nro_caso,
+                            fecha_reparto,
+                            operador,
+                            archivo_origen
+                        )
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            str(fila[caso_col]),
+                            fecha_reparto,
+                            fila["OPERADOR"],
+                            "STREAMLIT"
+                        )
+                    )
+
+                except sqlite3.IntegrityError:
+
+                    pass
+
+            conn.commit()
+            conn.close()
             csv_reparto = df_reparto.to_csv(
                 index=False,
                 sep=";"
