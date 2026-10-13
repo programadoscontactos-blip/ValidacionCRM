@@ -180,70 +180,78 @@ if estado_filtro != "Todos":
 # =====================================
 # TABLA
 # =====================================
+# =====================================
+# BANDEJA DE TRABAJO
+# =====================================
 
 st.subheader(
     "Casos asignados"
 )
 
-columnas = [
-    "nro_caso",
-    "fecha_reparto",
-    "estado"
-]
-
-st.dataframe(
-    df_filtrado[columnas],
-    use_container_width=True,
-    hide_index=True
+cab1, cab2, cab3, cab4 = st.columns(
+    [3, 2, 2, 1]
 )
 
-# =====================================
-# VALIDAR CASO
-# =====================================
+cab1.markdown("**Caso**")
+cab2.markdown("**Fecha**")
+cab3.markdown("**Estado**")
+cab4.markdown("**Acción**")
 
-pendientes_df = df[
-    df["estado"] == "PENDIENTE"
-]
+st.divider()
 
-if len(pendientes_df) > 0:
+for _, fila in df_filtrado.iterrows():
 
-    st.divider()
-
-    caso_validar = st.selectbox(
-        "Seleccionar caso",
-        pendientes_df["nro_caso"].tolist()
+    c1, c2, c3, c4 = st.columns(
+        [3, 2, 2, 1]
     )
 
-    if st.button("✅ Marcar Validado"):
-
-        conn = sqlite3.connect(
-            "historico.db"
+    with c1:
+        st.write(
+            fila["nro_caso"]
         )
 
-        conn.execute(
-            """
-            UPDATE historico_casos
-            SET estado='VALIDADO'
-            WHERE nro_caso=?
-            """,
-            (caso_validar,)
+    with c2:
+        st.write(
+            fila["fecha_reparto"]
         )
 
-        conn.commit()
-        conn.close()
-
-        st.success(
-            f"Caso {caso_validar} validado correctamente"
+    with c3:
+        st.write(
+            fila["estado"]
         )
 
-        st.rerun()
+    with c4:
 
-else:
+        if fila["estado"] == "PENDIENTE":
 
-    st.success(
-        "No hay casos pendientes."
-    )
+            if st.button(
+                "Validar",
+                key=f"validar_{fila['nro_caso']}"
+            ):
 
+                conn = sqlite3.connect(
+                    "historico.db"
+                )
+
+                conn.execute(
+                    """
+                    UPDATE historico_casos
+                    SET estado='VALIDADO'
+                    WHERE nro_caso=?
+                    """,
+                    (
+                        fila["nro_caso"],
+                    )
+                )
+
+                conn.commit()
+                conn.close()
+
+                st.rerun()
+
+        else:
+
+            st.write("✔")
 # =====================================
 # DESCARGA
 # =====================================
