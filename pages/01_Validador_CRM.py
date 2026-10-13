@@ -183,6 +183,13 @@ if estado_filtro != "Todos":
 # =====================================
 # BANDEJA DE TRABAJO
 # =====================================
+if st.session_state.get("archivo_validado"):
+
+    st.success(
+        "✅ Archivo validado"
+    )
+
+    st.session_state["archivo_validado"] = False
 
 st.subheader(
     "Casos asignados"
@@ -216,9 +223,18 @@ for _, fila in df_filtrado.iterrows():
         )
 
     with c3:
-        st.write(
-            fila["estado"]
-        )
+
+        if fila["estado"] == "VALIDADO":
+
+            st.markdown(
+                "🟢 **VALIDADO**"
+            )
+
+        else:
+
+            st.markdown(
+                "🟡 **PENDIENTE**"
+            )
 
     with c4:
 
@@ -247,6 +263,7 @@ for _, fila in df_filtrado.iterrows():
                 conn.commit()
                 conn.close()
 
+                st.session_state["archivo_validado"] = True
                 st.rerun()
 
         else:
