@@ -111,7 +111,7 @@ try:
         """,
         conn
     )
-                          
+    st.dataframe(df.head())                      
     conn.close()
 
 except Exception:
@@ -194,7 +194,64 @@ if estado_filtro != "Todos":
         df_filtrado["estado"]
         == estado_filtro
     ]
+# =====================================
+# ORDEN DE CASOS
+# =====================================
 
+modo_orden = st.selectbox(
+    "Ordenar casos",
+    [
+        "Automático: sin fecha primero",
+        "Fecha más próxima",
+        "Fecha más lejana"
+    ]
+)
+
+df_filtrado["fecha_tmp"] = pd.to_datetime(
+    df_filtrado["fecha_traslado"],
+    format="%d/%m/%Y",
+    errors="coerce"
+)
+
+if modo_orden == "Automático: sin fecha primero":
+
+    df_filtrado["sin_fecha"] = (
+        df_filtrado["fecha_tmp"].isna()
+    )
+
+    df_filtrado = df_filtrado.sort_values(
+        by=[
+            "sin_fecha",
+            "fecha_tmp"
+        ],
+        ascending=[
+            False,
+            True
+        ],
+        kind="stable"
+    )
+
+elif modo_orden == "Fecha más próxima":
+
+    df_filtrado = df_filtrado.sort_values(
+        by="fecha_tmp",
+        ascending=True,
+        na_position="last",
+        kind="stable"
+    )
+
+else:
+
+    df_filtrado = df_filtrado.sort_values(
+        by="fecha_tmp",
+        ascending=False,
+        na_position="last",
+        kind="stable"
+    )
+
+df_filtrado = df_filtrado.reset_index(
+    drop=True
+)
 # =====================================
 # TABLA
 # =====================================
@@ -218,7 +275,7 @@ cab1, cab2, cab3, cab4 = st.columns(
 )
 
 cab1.markdown("**Caso**")
-cab2.markdown("**Fecha**")
+cab2.markdown("**Fecha Traslado**")
 cab3.markdown("**Estado**")
 cab4.markdown("**Acción**")
 
@@ -237,7 +294,7 @@ for _, fila in df_filtrado.iterrows():
 
     with c2:
         st.write(
-            fila["fecha_reparto"]
+            fila["fecha_traslado"]
         )
 
     with c3:
