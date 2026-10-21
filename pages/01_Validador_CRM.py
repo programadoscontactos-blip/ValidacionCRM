@@ -111,9 +111,7 @@ try:
         """,
         conn
     )
-    st.dataframe(df.head())
-    st.write(df.columns.tolist())
-
+                          
     conn.close()
 
 except Exception:
