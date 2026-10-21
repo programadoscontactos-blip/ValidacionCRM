@@ -76,9 +76,11 @@ def crear_historico():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS historico_casos (
             nro_caso TEXT PRIMARY KEY,
+            fecha_traslado TEXT,
             fecha_reparto TEXT,
             operador TEXT,
-            archivo_origen TEXT
+            archivo_origen TEXT,
+            estado TEXT DEFAULT 'PENDIENTE'
         )
     """)
 
@@ -86,6 +88,16 @@ def crear_historico():
     conn.close()
 
 crear_historico()
+conn = sqlite3.connect("historico.db")
+
+estructura = pd.read_sql_query(
+    "PRAGMA table_info(historico_casos)",
+    conn
+)
+
+st.dataframe(estructura)
+
+conn.close()
 
 st.title(
     "🚑 Repartidor Automático de Traslados"
@@ -416,6 +428,7 @@ if procesar:
                         """,
                         (
                             str(fila[caso_col]),
+                            fila["FECHA"],
                             fecha_reparto,
                             fila["OPERADOR"],
                             "STREAMLIT"
@@ -456,17 +469,19 @@ if procesar:
                         INSERT INTO historico_casos
                         (
                             nro_caso,
+                            fecha_traslado,
                             fecha_reparto,
                             operador,
                             archivo_origen
                         )
-                        VALUES (?, ?, ?, ?)
+                        VALUES (?, ?, ?, ?, ?)
                         """,
                         (
                             str(fila[caso_col]),
+                            fila["FECHA"],
                             fecha_reparto,
                             fila["OPERADOR"],
-                            "STREAMLIT",
+                            "STREAMLIT"
                         ),
                     )
 
