@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 
+from datetime import datetime, time
+
 # =====================================
 # CONFIGURACION
 # =====================================
@@ -10,7 +12,9 @@ st.set_page_config(
     page_title="Validador CRM",
     page_icon="📋",
     layout="wide"
+    
 )
+st.error("ESTOY EJECUTANDO 01_Validador_CRM.py")
 
 # =====================================
 # LOGIN
@@ -75,7 +79,16 @@ with col2:
 
         st.session_state["usuario"] = None
         st.rerun()
+# =====================================
+# RELOJ Y CUENTA REGRESIVA
+# =====================================
 
+ahora = datetime.now()
+
+st.info(
+    f"🕒 Hora actual del servidor: {ahora.strftime('%d/%m/%Y %H:%M:%S')}"
+)
+st.error("PRUEBA RELOJ")
 # =====================================
 # LEER HISTORICO
 # =====================================
