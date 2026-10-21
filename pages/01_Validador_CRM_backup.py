@@ -11,7 +11,7 @@ st.set_page_config(
     page_icon="📋",
     layout="wide"
 )
-
+st.write("🔥 PRUEBA 123")
 # =====================================
 # LOGIN
 # =====================================
@@ -67,6 +67,7 @@ with col1:
 
     st.title(
         f"📋 Validador CRM - {usuario}"
+        st.error("PRUEBA VISUAL")
     )
 
 with col2:
@@ -75,6 +76,27 @@ with col2:
 
         st.session_state["usuario"] = None
         st.rerun()
+# =====================================
+# FECHA Y HORA
+# =====================================
+
+ahora = datetime.now()
+
+st.info(
+    f"📅 Fecha: {ahora.strftime('%d/%m/%Y')} | 🕒 Hora: {ahora.strftime('%H:%M:%S')}"
+)
+
+# =====================================
+# ALERTA HORARIO LIMITE
+# =====================================
+
+hora_limite = time(11, 30)
+
+if ahora.time() > hora_limite:
+
+    st.error(
+        "🚨 ATENCIÓN: HORARIO LÍMITE SUPERADO (11:30 HS)"
+    )
 
 # =====================================
 # LEER HISTORICO

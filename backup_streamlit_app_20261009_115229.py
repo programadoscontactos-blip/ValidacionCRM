@@ -51,7 +51,7 @@ def analizar_descripcion(texto):
 
         return {
             "fecha": None,
-            "hora": "00:00",
+            "hora": 11:30",
             "alerta": "SIN_FECHA"
         }
 

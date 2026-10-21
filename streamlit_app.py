@@ -428,6 +428,7 @@ if procesar:
 
             conn.commit()
             conn.close()
+            st.write(df_reparto.columns.tolist())
             csv_reparto = df_reparto.to_csv(
                 index=False,
                 sep=";"
