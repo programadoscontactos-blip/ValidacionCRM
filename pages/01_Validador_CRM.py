@@ -83,7 +83,12 @@ with col2:
 # RELOJ Y CUENTA REGRESIVA
 # =====================================
 
-ahora = datetime.now()
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+ahora = datetime.now(
+    ZoneInfo("America/Argentina/Buenos_Aires")
+)
 
 st.info(
     f"🕒 Hora actual del servidor: {ahora.strftime('%d/%m/%Y %H:%M:%S')}"
