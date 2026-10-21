@@ -111,6 +111,7 @@ try:
         """,
         conn
     )
+    st.write(df.columns.tolist())
 
     conn.close()
 
