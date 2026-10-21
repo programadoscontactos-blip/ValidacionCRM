@@ -13,8 +13,6 @@ st.set_page_config(
     page_icon="🚑",
     layout="wide"
 )
-st.error("VERSION NUEVA DEL REPARTIDOR")
-
 if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = 0
 
@@ -72,14 +70,12 @@ def analizar_descripcion(texto):
 def crear_historico():
 
     conn = sqlite3.connect("historico.db")
-    st.error("ABRI HISTORICO")
 
     cursor = conn.cursor()
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS historico_casos (
             nro_caso TEXT PRIMARY KEY,
-            fecha_traslado TEXT,
             fecha_reparto TEXT,
             operador TEXT,
             archivo_origen TEXT,
@@ -91,16 +87,6 @@ def crear_historico():
     conn.close()
 
 crear_historico()
-conn = sqlite3.connect("historico.db")
-
-estructura = pd.read_sql_query(
-    "PRAGMA table_info(historico_casos)",
-    conn
-)
-
-st.dataframe(estructura)
-
-conn.close()
 
 st.title(
     "🚑 Repartidor Automático de Traslados"
@@ -414,11 +400,32 @@ if procesar:
                 "%d/%m/%Y"
             )
 
+            for _, fila in df_reparto.iterrows():
 
+                try:
 
-            except sqlite3.IntegrityError:
+                    conn.execute(
+                        """
+                        INSERT INTO historico_casos
+                        (
+                            nro_caso,
+                            fecha_reparto,
+                            operador,
+                            archivo_origen
+                        )
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (
+                            str(fila[caso_col]),
+                            fecha_reparto,
+                            fila["OPERADOR"],
+                            "STREAMLIT"
+                        )
+                    )
 
-            pass
+                except sqlite3.IntegrityError:
+
+                    pass
 
             conn.commit()
             conn.close()
@@ -434,7 +441,6 @@ if procesar:
                 file_name=f"reparto_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv"
             )  
-            st.error("ANTES DE GUARDAR HISTORICO")
             # =====================================
             # GUARDAR HISTORICO
             # =====================================
@@ -442,32 +448,30 @@ if procesar:
             conn = sqlite3.connect("historico.db")
 
             fecha_reparto = datetime.now().strftime("%d/%m/%Y")
-            st.error("ANTES DEL FOR")
+
             for _, fila in df_reparto.iterrows():
 
                 try:
-                    st.error("LLEGO AL INSERT NUEVO")
                     conn.execute(
-                    """
-                    INSERT INTO historico_casos
-                    (
-                        nro_caso,
-                        fecha_traslado,
-                        fecha_reparto,
-                        operador,
-                        archivo_origen
+                        """
+                        INSERT INTO historico_casos
+                        (
+                            nro_caso,
+                            fecha_reparto,
+                            operador,
+                            archivo_origen,
+                            estado
+                        )
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (
+                            str(fila[caso_col]),
+                            fecha_reparto,
+                            fila["OPERADOR"],
+                            "STREAMLIT",
+                            "PENDIENTE"
+                        )
                     )
-                    VALUES (?, ?, ?, ?, ?)
-                    """,
-
-                    (
-                        str(fila[caso_col]),
-                        fila["FECHA"],
-                        fecha_reparto,
-                        fila["OPERADOR"],
-                        "STREAMLIT"
-                    )
-                )
 
                 except sqlite3.IntegrityError:
                     pass
@@ -523,11 +527,5 @@ if procesar:
                     df_enviados_previamente
                 )
 
-            except Exception as e:
-                import traceback
-
-                st.error(str(e))
-
-                st.text(traceback.format_exc())
-
-                raise
+        except Exception as e:
+            st.error(f"Error: {e}")
