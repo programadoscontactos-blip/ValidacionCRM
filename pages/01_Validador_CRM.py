@@ -14,7 +14,7 @@ st.set_page_config(
     layout="wide"
     
 )
-st.error("ESTOY EJECUTANDO 01_Validador_CRM.py")
+
 
 # =====================================
 # LOGIN
@@ -88,7 +88,7 @@ ahora = datetime.now()
 st.info(
     f"🕒 Hora actual del servidor: {ahora.strftime('%d/%m/%Y %H:%M:%S')}"
 )
-st.error("PRUEBA RELOJ")
+
 # =====================================
 # LEER HISTORICO
 # =====================================
