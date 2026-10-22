@@ -86,11 +86,105 @@ def crear_historico():
             usuario_validacion TEXT
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS operadores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT UNIQUE,
+            password TEXT,
+            activo INTEGER DEFAULT 1,
+            recibe_reparto INTEGER DEFAULT 1,
+            es_backoffice INTEGER DEFAULT 0
+        )
+    """)
+    cursor.execute("""
+        INSERT OR IGNORE INTO operadores
+        (
+            usuario,
+            password,
+            activo,
+            recibe_reparto,
+            es_backoffice
+        )
+        VALUES
+        (
+            'Micaela',
+            '1234',
+            1,
+            1,
+            0
+        )
+    """)
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO operadores
+        (
+            usuario,
+            password,
+            activo,
+            recibe_reparto,
+            es_backoffice
+        )
+        VALUES
+        (
+            'Salome',
+            '1234',
+            1,
+            1,
+            0
+        )
+    """)
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO operadores
+        (
+            usuario,
+            password,
+            activo,
+            recibe_reparto,
+            es_backoffice
+        )
+        VALUES
+        (
+            'Paloma',
+            '1234',
+            1,
+            1,
+            0
+        )
+    """)
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO operadores
+        (
+            usuario,
+            password,
+            activo,
+            recibe_reparto,
+            es_backoffice
+        )
+        VALUES
+        (
+            'Backoffice',
+            'admin',
+            1,
+            0,
+            1
+        )
+    """)
     conn.commit()
     conn.close()
 
 crear_historico()
 conn = sqlite3.connect("historico.db")
+
+operadores = pd.read_sql_query(
+    "SELECT * FROM operadores",
+    conn
+)
+
+conn.close()
+
+
 
 
 conn.close()
