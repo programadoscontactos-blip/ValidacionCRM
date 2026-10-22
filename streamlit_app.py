@@ -80,7 +80,10 @@ def crear_historico():
             fecha_reparto TEXT,
             operador TEXT,
             archivo_origen TEXT,
-            estado TEXT DEFAULT 'PENDIENTE'
+            estado TEXT DEFAULT 'PENDIENTE',
+            fecha_validacion TEXT,
+            hora_validacion TEXT,
+            usuario_validacion TEXT
         )
     """)
     conn.commit()
@@ -512,12 +515,7 @@ if procesar:
             st.success(
                 f"Se repartieron {len(df_reparto)} casos nuevos y se excluyeron {enviados_previamente} ya enviados previamente."
             )
-            with st.expander(
-                f"Ver {enviados_previamente} casos enviados previamente"
-            ):
-                st.dataframe(
-                    df_enviados_previamente
-                )
+
 
         except Exception as e:
             st.error(f"Error: {e}")

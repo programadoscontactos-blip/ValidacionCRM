@@ -111,7 +111,17 @@ try:
         """,
         conn
     )
-                   
+    st.dataframe(
+        df[
+            [
+                "nro_caso",
+                "estado",
+                "fecha_validacion",
+                "hora_validacion",
+                "usuario_validacion"
+            ]
+        ]
+    )
     conn.close()
 
 except Exception:
@@ -169,6 +179,42 @@ with c3:
     st.metric(
         "Total Casos",
         len(df)
+    )
+actividad_hoy = df[
+    (df["usuario_validacion"] == usuario)
+    &
+    (
+        df["fecha_validacion"]
+        ==
+        datetime.now().strftime("%d/%m/%Y")
+    )
+].copy()
+
+if len(actividad_hoy) > 0:
+
+    actividad_hoy["hora_bloque"] = (
+        actividad_hoy["hora_validacion"]
+        .str.slice(0, 2)
+    )
+
+    resumen_horas = (
+        actividad_hoy
+        .groupby("hora_bloque")
+        .size()
+        .reset_index(name="servicios")
+        .sort_values("hora_bloque")
+    )
+
+    st.subheader("📊 Mi actividad de hoy")
+
+    for _, fila in resumen_horas.iterrows():
+
+        st.write(
+            f"{fila['hora_bloque']} hs → {fila['servicios']} servicios"
+        )
+
+    st.caption(
+        f"Total hoy: {len(actividad_hoy)} servicios"
     )
 
 # =====================================
@@ -324,13 +370,30 @@ for _, fila in df_filtrado.iterrows():
                     "historico.db"
                 )
 
+                ahora = datetime.now()
+
+                fecha_validacion = ahora.strftime(
+                    "%d/%m/%Y"
+                )
+
+                hora_validacion = ahora.strftime(
+                    "%H:%M"
+                )
+
                 conn.execute(
                     """
                     UPDATE historico_casos
-                    SET estado='VALIDADO'
+                    SET
+                        estado='VALIDADO',
+                        fecha_validacion=?,
+                        hora_validacion=?,
+                        usuario_validacion=?
                     WHERE nro_caso=?
                     """,
                     (
+                        fecha_validacion,
+                        hora_validacion,
+                        usuario,
                         fila["nro_caso"],
                     )
                 )

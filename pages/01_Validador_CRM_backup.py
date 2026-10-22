@@ -82,9 +82,15 @@ with col2:
 
 ahora = datetime.now()
 
-st.info(
-    f"📅 Fecha: {ahora.strftime('%d/%m/%Y')} | 🕒 Hora: {ahora.strftime('%H:%M:%S')}"
+fecha_validacion = ahora.strftime(
+    "%d/%m/%Y"
 )
+
+hora_validacion = ahora.strftime(
+    "%H:%M"
+)
+
+usuario_validacion = usuario
 
 # =====================================
 # ALERTA HORARIO LIMITE
