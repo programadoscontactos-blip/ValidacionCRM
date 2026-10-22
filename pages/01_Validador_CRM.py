@@ -111,7 +111,7 @@ try:
         """,
         conn
     )
-    st.dataframe(df.head())                      
+                   
     conn.close()
 
 except Exception:

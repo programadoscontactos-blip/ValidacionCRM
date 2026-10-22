@@ -216,21 +216,8 @@ if procesar:
                 alertas.append(
                     resultado["alerta"]
                 )
-
-            df["FECHA"] = fechas
-
-            df["FECHA"] = fechas
-
-            df["FECHA"] = pd.to_datetime(
-                df["FECHA"],
-                dayfirst=True,
-                errors="coerce"
-            )
-
-            df["FECHA"] = fechas
-
             df["FECHA"] = (
-                pd.Series(df["FECHA"])
+                pd.Series(fechas)
                 .fillna("")
                 .astype(str)
                 .str.strip()
@@ -240,6 +227,9 @@ if procesar:
                     regex=True
                 )
             )
+
+            df["HORA"] = horas
+            df["ALERTA"] = alertas
 
             df["HORA"] = horas
             df["ALERTA"] = alertas
