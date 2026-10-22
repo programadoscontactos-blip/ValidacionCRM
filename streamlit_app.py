@@ -89,12 +89,6 @@ def crear_historico():
 crear_historico()
 conn = sqlite3.connect("historico.db")
 
-estructura = pd.read_sql_query(
-    "PRAGMA table_info(historico_casos)",
-    conn
-)
-
-st.dataframe(estructura)
 
 conn.close()
 
@@ -224,10 +218,33 @@ if procesar:
                 )
 
             df["FECHA"] = fechas
+
+            df["FECHA"] = fechas
+
+            df["FECHA"] = pd.to_datetime(
+                df["FECHA"],
+                dayfirst=True,
+                errors="coerce"
+            )
+
+            df["FECHA"] = fechas
+
+            df["FECHA"] = (
+                pd.Series(df["FECHA"])
+                .fillna("")
+                .astype(str)
+                .str.strip()
+                .str.replace(
+                    r"^(\d{2}/\d{2}/)(\d{2})$",
+                    r"\g<1>20\g<2>",
+                    regex=True
+                )
+            )
+
             df["HORA"] = horas
             df["ALERTA"] = alertas
 
-            # =====================================
+            # ===================================
             # METRICAS
             # =====================================
 
@@ -412,7 +429,7 @@ if procesar:
 
             conn.commit()
             conn.close()
-            st.write(df_reparto.columns.tolist())
+
             csv_reparto = df_reparto.to_csv(
                 index=False,
                 sep=";"
