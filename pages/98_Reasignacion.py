@@ -2,19 +2,32 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 
-st.set_page_config(
-    page_title="Reasignación",
-    page_icon="🔄",
-    layout="wide"
-)
+# st.set_page_config(
+#    page_title="Reasignación",
+#    page_icon="🔄",
+#    layout="wide"
+#)
 
-if st.session_state.get("usuario") != "Backoffice":
+#conn = sqlite3.connect(
+#    "historico.db"
+#)
 
-    st.error(
-        "Acceso exclusivo para Backoffice."
-    )
+#usuario_actual = (
+#    st.session_state.get("usuario")
+#)
 
-    st.stop()
+#permisos = pd.read_sql_query(
+   # """
+  #  SELECT es_backoffice
+ #   FROM operadores
+#    WHERE usuario = ?
+  #  """,
+ #   conn,
+#    params=(usuario_actual,)
+#)
+
+#    conn.close()
+
 
 st.title(
     "🔄 Reasignación de Servicios"

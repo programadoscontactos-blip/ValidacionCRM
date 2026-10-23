@@ -1,7 +1,38 @@
+
 import streamlit as st
 import pandas as pd
 import sqlite3
+# conn = sqlite3.connect(
+#    "historico.db"
+#)
 
+#usuario_actual = (
+#    st.session_state.get("usuario")
+#)
+
+#permisos = pd.read_sql_query(
+#    """
+#    SELECT es_backoffice
+#    FROM operadores
+#    WHERE usuario = ?
+#    """,
+#    conn,
+#    params=(usuario_actual,)
+#)
+
+#conn.close()
+
+#if (
+#    len(permisos) == 0
+#    or
+#    permisos.iloc[0]["es_backoffice"] != 1
+#):
+
+#    st.error(
+#        "Acceso exclusivo para Backoffice."
+#    )
+
+#    st.stop()
 st.set_page_config(
     page_title="Operadores",
     page_icon="⚙️",
@@ -13,7 +44,6 @@ st.title("⚙️ Operadores")
 conn = sqlite3.connect(
     "historico.db"
 )
-
 df = pd.read_sql_query(
     """
     SELECT
@@ -37,8 +67,7 @@ editor = st.data_editor(
     width="stretch",
     disabled=[
         "id",
-        "usuario",
-        "es_backoffice"
+        "usuario"
     ]
 )
 st.divider()
