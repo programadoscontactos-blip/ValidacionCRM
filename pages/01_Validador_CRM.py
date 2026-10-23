@@ -20,15 +20,24 @@ st.set_page_config(
 # LOGIN
 # =====================================
 
-USUARIOS = {
-    "Micaela": "1234",
-    "Salome": "1234",
-    "Paloma": "1234",
-    "Backoffice": "admin"
-}
+conn = sqlite3.connect(
+    "historico.db"
+)
 
-if "usuario" not in st.session_state:
-    st.session_state["usuario"] = None
+usuarios_df = pd.read_sql_query(
+    """
+    SELECT
+        usuario,
+        password,
+        activo,
+        es_backoffice
+    FROM operadores
+    WHERE activo = 1
+    """,
+    conn
+)
+
+conn.close()
 
 if st.session_state["usuario"] is None:
 
@@ -36,7 +45,7 @@ if st.session_state["usuario"] is None:
 
     usuario_seleccionado = st.selectbox(
         "Usuario",
-        list(USUARIOS.keys())
+        usuarios_df["usuario"].tolist()
     )
 
     password = st.text_input(
@@ -46,16 +55,29 @@ if st.session_state["usuario"] is None:
 
     if st.button("Ingresar"):
 
-        if password == USUARIOS[usuario_seleccionado]:
+        usuario_db = usuarios_df[
+            usuarios_df["usuario"]
+            ==
+            usuario_seleccionado
+        ]
 
-            st.session_state["usuario"] = usuario_seleccionado
-            st.rerun()
+        if len(usuario_db) > 0:
 
-        else:
-
-            st.error(
-                "Contraseña incorrecta"
+            password_db = (
+                usuario_db.iloc[0]["password"]
             )
+
+            if password == password_db:
+
+                st.session_state[
+                    "usuario"
+                ] = usuario_seleccionado
+
+                st.rerun()
+
+        st.error(
+            "Usuario o contraseña incorrectos"
+        )
 
     st.stop()
 
