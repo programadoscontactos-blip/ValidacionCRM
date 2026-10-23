@@ -39,7 +39,7 @@ usuarios_df = pd.read_sql_query(
 
 conn.close()
 
-if st.session_state["usuario"] is None:
+if st.session_state.get("usuario") is None:
 
     st.title("📋 Validador CRM")
 
@@ -81,7 +81,7 @@ if st.session_state["usuario"] is None:
 
     st.stop()
 
-usuario = st.session_state["usuario"]
+usuario = st.session_state.get("usuario")
 
 # =====================================
 # CABECERA
