@@ -322,11 +322,8 @@ if procesar:
                     r"^(\d{2}/\d{2}/)(\d{2})$",
                     r"\g<1>20\g<2>",
                     regex=True
-                )
+)
             )
-
-            df["HORA"] = horas
-            df["ALERTA"] = alertas
 
             df["HORA"] = horas
             df["ALERTA"] = alertas
