@@ -447,10 +447,75 @@ if procesar:
             df_validos = df_validos.sort_values(
                 ["FECHA_ORDEN", "HORA"]
             )
+            conn_operadores = sqlite3.connect(
+                "historico.db"
+            )
 
-            operador1 = []
-            operador2 = []
-            operador3 = []
+            operadores_df = pd.read_sql_query(
+                """
+                SELECT usuario
+                FROM operadores
+                WHERE activo = 1
+                AND recibe_reparto = 1
+                AND es_backoffice = 0
+                """,
+                conn_operadores
+            )
+
+            conn_operadores.close()
+
+            operadores_activos = (
+                operadores_df["usuario"]
+                .tolist()
+            )
+
+            st.write(
+    "Operadores activos:",
+    operadores_activos
+)
+
+            # =====================================
+            # OPERADORES ACTIVOS
+            # =====================================
+
+            conn_operadores = sqlite3.connect(
+                "historico.db"
+            )
+
+            operadores_df = pd.read_sql_query(
+                """
+                SELECT usuario
+                FROM operadores
+                WHERE activo = 1
+                AND recibe_reparto = 1
+                AND es_backoffice = 0
+                """,
+                conn_operadores
+            )
+
+            conn_operadores.close()
+
+            operadores_activos = (
+                operadores_df["usuario"]
+                .tolist()
+            )
+
+            if len(operadores_activos) == 0:
+
+                st.error(
+                    "No hay operadores habilitados para reparto."
+                )
+
+                st.stop()
+
+            # =====================================
+            # REPARTO DINAMICO
+            # =====================================
+
+            casos_por_operador = {
+                operador: []
+                for operador in operadores_activos
+            }
 
             contador_global = 0
 
@@ -466,43 +531,31 @@ if procesar:
 
                     fila = fila.copy()
 
-                    if contador_global % 3 == 0:
+                    operador_asignado = (
+                        operadores_activos[
+                            contador_global
+                            % len(operadores_activos)
+                        ]
+                    )
 
-                        fila["OPERADOR"] = "Micaela"
-                        operador1.append(fila)
+                    fila["OPERADOR"] = (
+                        operador_asignado
+                    )
 
-                    elif contador_global % 3 == 1:
-
-                        fila["OPERADOR"] = "Salome"
-                        operador2.append(fila)
-
-                    else:
-
-                        fila["OPERADOR"] = "Paloma"
-                        operador3.append(fila)
+                    casos_por_operador[
+                        operador_asignado
+                    ].append(fila)
 
                     contador_global += 1
 
-            df1 = pd.DataFrame(
-                operador1
-            )
-
-            df2 = pd.DataFrame(
-                operador2
-            )
-
-            df3 = pd.DataFrame(
-                operador3
-            )
-
-            cant_micaela = len(df1)
-            cant_salome = len(df2)
-            cant_paloma = len(df3)
-
             df_reparto = pd.concat(
-                [df1, df2, df3],
+                [
+                    pd.DataFrame(casos)
+                    for casos in casos_por_operador.values()
+                ],
                 ignore_index=True
             )
+            
             conn = sqlite3.connect(
                 "historico.db"
             )
@@ -590,23 +643,27 @@ if procesar:
                         enviados_previamente
                     )
 
-            st.subheader("👩‍💼 Distribución de CasosReparto")
-
-            r1, r2, r3 = st.columns(3)
-
-            with r1:
-                st.metric("Micaela", cant_micaela)
-
-            with r2:
-                st.metric("Salome", cant_salome)
-
-            with r3:
-                st.metric("Paloma", cant_paloma)
-
-            st.success(
-                f"Se repartieron {len(df_reparto)} casos nuevos y se excluyeron {enviados_previamente} ya enviados previamente."
+            st.subheader(
+                "👩‍💼 Distribución de Casos Reparto"
             )
 
+            columnas = st.columns(
+                len(operadores_activos)
+            )
 
+            for i, operador in enumerate(
+                operadores_activos
+            ):
+
+                with columnas[i]:
+
+                    st.metric(
+                        operador,
+                        len(
+                            casos_por_operador[
+                                operador
+                            ]
+                        )
+            )
         except Exception as e:
             st.error(f"Error: {e}")
