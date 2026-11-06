@@ -2,33 +2,85 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 
-# st.set_page_config(
-#    page_title="Reasignación",
-#    page_icon="🔄",
-#    layout="wide"
-#)
+st.set_page_config(
+    page_title="Reasignación",
+    page_icon="🔄",
+    layout="wide"
+)
 
-#conn = sqlite3.connect(
-#    "historico.db"
-#)
+# =====================================
+# CONTROL DE ACCESO BACKOFFICE
+# =====================================
 
-#usuario_actual = (
-#    st.session_state.get("usuario")
-#)
+usuario_actual = st.session_state.get("usuario")
 
-#permisos = pd.read_sql_query(
-   # """
-  #  SELECT es_backoffice
- #   FROM operadores
-#    WHERE usuario = ?
-  #  """,
- #   conn,
-#    params=(usuario_actual,)
-#)
+if usuario_actual is None:
 
-#    conn.close()
+    st.warning(
+        "Primero debe iniciar sesión desde Validador CRM."
+    )
 
+    st.stop()
 
+conn_permiso = sqlite3.connect(
+    "historico.db"
+)
+
+permiso = conn_permiso.execute(
+    """
+    SELECT es_backoffice
+    FROM operadores
+    WHERE usuario = ?
+      AND activo = 1
+    """,
+    (
+        usuario_actual,
+    )
+).fetchone()
+
+conn_permiso.close()
+
+if permiso is None or permiso[0] != 1:
+
+    st.error(
+        "Acceso exclusivo para usuarios con permiso Backoffice."
+    )
+
+    st.stop()
+
+# =====================================
+# PAGINA
+# =====================================
+
+st.title(
+    "🔄 Reasignación de Servicios"
+)
+
+conn_permiso = sqlite3.connect(
+    "historico.db"
+)
+
+permiso = conn_permiso.execute(
+    """
+    SELECT es_backoffice
+    FROM operadores
+    WHERE usuario = ?
+    AND activo = 1
+    """,
+    (
+        usuario_actual,
+    )
+).fetchone()
+
+conn_permiso.close()
+
+if permiso is None or permiso[0] != 1:
+
+    st.error(
+        "Acceso exclusivo para usuarios con permiso Backoffice."
+    )
+
+    st.stop()
 st.title(
     "🔄 Reasignación de Servicios"
 )
@@ -108,16 +160,15 @@ for _, fila in df_casos.iterrows():
     with c4:
 
         nuevo_operador = st.selectbox(
-            "",
+            "Nuevo operador",
             operadores,
             index=(
-                operadores.index(
-                    fila["operador"]
-                )
+                operadores.index(fila["operador"])
                 if fila["operador"] in operadores
                 else 0
             ),
-            key=f"op_{fila['nro_caso']}"
+            key=f"op_{fila['nro_caso']}",
+            label_visibility="collapsed"
         )
 
         if nuevo_operador != fila["operador"]:

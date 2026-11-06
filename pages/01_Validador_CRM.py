@@ -82,7 +82,32 @@ if st.session_state.get("usuario") is None:
     st.stop()
 
 usuario = st.session_state.get("usuario")
+# =====================================
+# PERMISO DEL USUARIO
+# =====================================
 
+conn_permiso = sqlite3.connect(
+    "historico.db"
+)
+
+permiso = conn_permiso.execute(
+    """
+    SELECT es_backoffice
+    FROM operadores
+    WHERE usuario = ?
+      AND activo = 1
+    """,
+    (
+        usuario,
+    )
+).fetchone()
+
+conn_permiso.close()
+
+es_backoffice = (
+    permiso is not None
+    and permiso[0] == 1
+)
 # =====================================
 # CABECERA
 # =====================================
@@ -133,17 +158,17 @@ try:
         """,
         conn
     )
-    st.dataframe(
-        df[
-            [
-                "nro_caso",
-                "estado",
-                "fecha_validacion",
-                "hora_validacion",
-                "usuario_validacion"
-            ]
-        ]
-    )
+    #st.dataframe(
+    #    df[
+    #        [
+    #            "nro_caso",
+    #            "estado",
+    #            "fecha_validacion",
+    #            "hora_validacion",
+    #            "usuario_validacion"
+    #        ]
+    #    ]
+    #)
     conn.close()
 
 except Exception:
@@ -158,12 +183,77 @@ except Exception:
 # FILTRO OPERADOR
 # =====================================
 
-if usuario != "Backoffice":
+if not es_backoffice:
 
     df = df[
         df["operador"] == usuario
     ].copy()
+# =====================================
+# VISTA EXCLUSIVA BACKOFFICE
+# =====================================
 
+if es_backoffice:
+
+    st.info(
+        "Vista de supervisión. Backoffice no tiene casos asignados para validar."
+    )
+
+    st.subheader(
+        "Estado general por operador"
+    )
+
+    resumen = (
+        df.groupby(
+            [
+                "operador",
+                "estado"
+            ]
+        )
+        .size()
+        .unstack(
+            fill_value=0
+        )
+        .reset_index()
+    )
+
+    if "PENDIENTE" not in resumen.columns:
+        resumen["PENDIENTE"] = 0
+
+    if "VALIDADO" not in resumen.columns:
+        resumen["VALIDADO"] = 0
+
+    resumen["TOTAL"] = (
+        resumen["PENDIENTE"]
+        + resumen["VALIDADO"]
+    )
+
+    resumen = resumen.rename(
+        columns={
+            "operador": "Operador",
+            "PENDIENTE": "Pendientes",
+            "VALIDADO": "Validados",
+            "TOTAL": "Total"
+        }
+    )
+
+    st.dataframe(
+        resumen[
+            [
+                "Operador",
+                "Pendientes",
+                "Validados",
+                "Total"
+            ]
+        ],
+        hide_index=True,
+        use_container_width=True
+    )
+
+    st.caption(
+        "Para cambiar la asignación de servicios, utilice la página Reasignación."
+    )
+
+    st.stop()
 # =====================================
 # METRICAS
 # =====================================
