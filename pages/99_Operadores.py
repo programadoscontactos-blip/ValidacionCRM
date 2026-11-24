@@ -89,7 +89,8 @@ df = pd.read_sql_query(
         usuario,
         activo,
         recibe_reparto,
-        es_backoffice
+        es_backoffice,
+        envia_reparto
     FROM operadores
     """,
     conn
@@ -98,6 +99,7 @@ df = pd.read_sql_query(
 df["activo"] = df["activo"].astype(bool)
 df["recibe_reparto"] = df["recibe_reparto"].astype(bool)
 df["es_backoffice"] = df["es_backoffice"].astype(bool)
+df["envia_reparto"] = df["envia_reparto"].astype(bool)
 
 editor = st.data_editor(
     df,

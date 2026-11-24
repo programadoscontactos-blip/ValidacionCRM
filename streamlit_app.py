@@ -184,7 +184,41 @@ operadores = pd.read_sql_query(
 
 conn.close()
 
+usuario_actual = st.session_state.get("usuario")
 
+if usuario_actual is None:
+
+    st.warning(
+        "Primero debe iniciar sesión desde Validador CRM."
+    )
+
+    st.stop()
+
+conn_permiso = sqlite3.connect(
+    "historico.db"
+)
+
+permiso = conn_permiso.execute(
+    """
+    SELECT envia_reparto
+    FROM operadores
+    WHERE usuario = ?
+    AND activo = 1
+    """,
+    (
+        usuario_actual,
+    )
+).fetchone()
+
+conn_permiso.close()
+
+if permiso is None or permiso[0] != 1:
+
+    st.error(
+        "No tiene permiso para enviar repartos."
+    )
+
+    st.stop()
 
 
 conn.close()

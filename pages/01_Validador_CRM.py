@@ -237,21 +237,17 @@ if es_backoffice:
     )
 
     st.dataframe(
-        resumen[
-            [
-                "Operador",
-                "Pendientes",
-                "Validados",
-                "Total"
-            ]
-        ],
-        hide_index=True,
-        use_container_width=True
+    resumen[
+        ["Operador", "Pendientes", "Validados", "Total"]
+    ],
+    hide_index=True,
+    use_container_width=True
     )
 
     st.caption(
-        "Para cambiar la asignación de servicios, utilice la página Reasignación."
+    "Para cambiar la asignación de servicios, utilice la página Reasignación."
     )
+
 
     st.stop()
 # =====================================
